@@ -8,7 +8,6 @@
 std::string GetFileContents(const char* filename);
 
 namespace BGRCore {
-
     class Shader
     {
     public:
@@ -18,9 +17,22 @@ namespace BGRCore {
         void Activate();
         void Delete();
 
-        void SetFloat(std::string name, float val);
-        void SetUniform1i(std::string name, GLuint val);
-        void SetUniformMatrix4(std::string name, glm::mat4 val);
+        void SetFloat(const std::string& name, float val);
+        void SetInt(const std::string& name, int val);
+        void SetBool(const std::string& name, bool val);
+
+        void SetVec2(const std::string& name, const glm::vec2& val);
+        void SetVec2(const std::string& name, float x, float y);
+
+        void SetVec3(const std::string& name, const glm::vec3& val);
+        void SetVec3(const std::string& name, float x, float y, float z);
+
+        void SetVec4(const std::string& name, const glm::vec4& val);
+        void SetVec4(const std::string& name, float x, float y, float z, float w);
+
+        void SetMat2(const std::string& name, const glm::mat2& mat);
+        void SetMat3(const std::string& name, const glm::mat3& mat);
+        void SetMat4(const std::string& name, const glm::mat4& mat);
     private:
         void CompileErrors(unsigned int shader, const char* type);
     };

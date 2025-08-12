@@ -6,33 +6,12 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace BGRCore {
-    Camera::Camera(BGAppCore::Window* window, int width, int height, glm::vec3 pos) : _window(window), _width(width), _height(height), Position(pos) {
-        Right = glm::normalize(glm::cross(Direction, Up));
-        Forward = Direction;
-
-        glfwSetInputMode(_window->GetNativeWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    Camera::Camera(BGAppCore::Window* window, int width, int height, glm::vec3 pos) : _window(window),
+        _viewWidth(width), _viewHeight(height), Position(pos) {
     }
 
-    void Camera::CalculateMatrix(Shader& shader, const char* uniform) {
-        glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(CameraMatrix));
-        glUniform3f(glGetUniformLocation(shader.ID, "cameraPosition"), Position.x, Position.y, Position.z);
-    }
-
-    glm::mat4 Camera::GetView() {
-        return glm::lookAt(Position, Position + Direction, Up);
-    }
-
-    glm::mat4 Camera::GetProjection() {
-        float FOV = 90.0f;
-        float nearPane = 0.01f;
-        float farPane = 100.0f;
-
-        return glm::perspective(glm::radians(FOV), (float)_width / (float)_height, nearPane, farPane);
-    }
-
-    void Camera::Refresh(int width, int height) {
-        _width = static_cast<float>(width);
-        _height = static_cast<float>(height);
+    void Camera::SendMatrixData(Shader& shader, const char* uniform) {
+        shader.SetMat4(uniform, CameraMatrix);
     }
 
     void Camera::UpdateMatrix(float FOV, float nearPane, float farPane) {
@@ -45,52 +24,32 @@ namespace BGRCore {
         CameraMatrix = projection * view;
     }
 
-    void Camera::HandleInput() {
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::W)) {
-            HandleMovement(Direction);
-        }
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::A)) {
-            HandleMovement(-Right);
-        }
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::S)) {
-            HandleMovement(-Direction);
-        }
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::D)) {
-            HandleMovement(Right);
-        }
-
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::SPACE)) {
-            HandleMovement(Up);
-        }
-        if (BGAppCore::Input::GetKeyHold(BGAppCore::KeyCode::LEFT_CONTROL)) {
-            HandleMovement(-Up);
-        }
-
-        HandleRotation();
-        glfwSetCursorPos(_window->GetNativeWindow(), (_width / 2), (_height / 2));
+    void Camera::RefreshViewport(int width, int height) {
+        _viewWidth = static_cast<float>(width);
+        _viewHeight = static_cast<float>(height);
     }
 
-    void Camera::HandleMovement(glm::vec3 movementDirection) {
-        Position += movementDirection * _speed * static_cast<float>(BGAppCore::Time::DeltaTime);
+    float Camera::GetFOV() {
+        return _fov;
     }
 
-    void Camera::HandleRotation() {
-        double mouseX;
-        double mouseY;
-        glfwGetCursorPos(_window->GetNativeWindow(), &mouseX, &mouseY);
+    void Camera::SetFOV(float fov) {
+        _fov = fov;
+    }
 
-        float rotationX = _lookSensitivity * (float)(mouseY - (_height / 2)) / _height;
-        float rotationY = _lookSensitivity * (float)(mouseX - (_width / 2)) / _width;
+    float Camera::GetNearPane() {
+        return _nearPane;
+    }
 
-        glm::vec3 newDirection = glm::rotate(Direction, glm::radians(-rotationX), Right);
+    void Camera::SetNearPane(float nearPane) {
+        _nearPane = nearPane;
+    }
 
-        if (!((glm::angle(newDirection, Up) <= glm::radians(5.0f)) or (glm::angle(newDirection, -Up) <= glm::radians(5.0f)))){
-            Direction = newDirection;
-        }
+    float Camera::GetFarPane() {
+        return _farPane;
+    }
 
-        Direction = glm::rotate(Direction, glm::radians(-rotationY), Up);
-
-        Right = glm::normalize(glm::cross(Direction, Up));
-        Forward = Direction;
+    void Camera::SetFarPane(float farPane) {
+        _farPane = farPane;
     }
 }

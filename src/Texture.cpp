@@ -34,7 +34,7 @@ namespace BGRCore {
     }
 
     void Texture::TextureUnit(Shader& shader, const char* uniform, GLuint slot) {
-        shader.SetUniform1i(uniform, slot);
+        shader.SetInt(uniform, slot);
     }
 
     void Texture::Bind() {
